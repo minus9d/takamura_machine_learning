@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # 参考：http://matplotlib.org/examples/mplot3d/surface3d_demo.html
+#       http://stackoverflow.com/questions/7744697/how-to-show-two-figures-using-matplotlib
 
 
 from mpl_toolkits.mplot3d import Axes3D
@@ -37,7 +38,7 @@ def gradient_descent_method(gradient_f, init_pos, learning_rate):
     # 収束するか最大試行回数に達するまで
     for i in range(iteration_max):
 
-        print(i+1, ":", pos)
+        # print(i+1, ":", pos)
 
         # 最急上昇法の場合は-を+にする
         pos_new = pos - learning_rate * gradient_f(pos)
@@ -52,11 +53,9 @@ def gradient_descent_method(gradient_f, init_pos, learning_rate):
 
     return (pos, np.array(pos_history))
 
+# 値の高低を色で表現
+def draw_pcolor(fig):
 
-def show_3d_graph(f):
-
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
 
     # X, Yを一定範囲にグリッド状に取り、Z = f(X,Y)を求める
     X = np.arange(-1.0, 1.0, 0.01)
@@ -77,56 +76,99 @@ def show_3d_graph(f):
     # Z軸に表示する数値のフォーマット
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 
-    # グラフ右端に凡例を表示
+    # # グラフ右端に凡例を表示
     fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    # 表示
+    fig.show()
+    
+
+def draw_contour(fig):
+    # 等高線を描く
+    ax1 = fig.add_subplot(111)
+    n = 256
+    x = np.linspace(-1.5, 1.5, n)
+    y = np.linspace(-1.5, 1.5, n)
+    X,Y = np.meshgrid(x, y)
+
+    level_num = 20
+    # 等高線で同じ高さとなるエリアを色分け
+    ax1.contourf(X, Y, f1(X, Y), level_num, alpha=.75, cmap=plt.cm.hot)
+    # 等高線を引く
+    C = ax1.contour(X, Y, f1(X, Y), level_num, colors='black', linewidth=.5)
+    ax1.clabel(C, inline=1, fontsize=10)
+    ax1.set_title('contour')
+
+
+def main():
+    # 等高線を表示
+    fig1 = plt.figure(1)
+    draw_contour(fig1)
 
     plt.show()
     
-def main():
+    
+def aaa():
+    
+    input()
 
-    show_3d_graph(f1)
-    a = 1/0
-    
-    
-    learning_rates = [ 0.1, 0.2, 0.4, 0.6, 0.8, 1.0 ]
+    learning_rates = [ 0.1, 0.2, 0.4, 0.6 ]
+
+    # 収束する様子を表示するためのグラフ
+    fig2 = plt.figure(2)
 
     for i, learning_rate in enumerate(learning_rates):
         ans, pos_history = gradient_descent_method(gradient_f1, (0.1, 0.1), learning_rate)
 
         # subplotの場所を指定
-        plt.subplot(3, 2, (i+1)) # 3行2列の意味
+        plt.subplot(2, 2, (i+1)) # 2行2列の意味
 
         # グラフのタイトル
         plt.title("learning rate: " + str(learning_rate) + ", iteration: " + str(len(pos_history)))
-        
-        # # グラフを描く
-        # x = np.arange(-0.3, 1.0, 0.01)
-        # y = f1(x)
-        # plt.plot(x, y)
-        
-        # # 移動した点を表示
-        # plt.plot(x_history, f1(x_history), 'o')
-        
-        # # 点同士を線で結ぶ
-        # for i in range(len(x_history)-1):
-        #     x1 = x_history[i]
-        #     y1 = f1(x_history[i])
-        #     x2 = x_history[i+1]
-        #     y2 = f1(x_history[i+1])
-        #     plt.plot([x1, x2], [y1, y2], linestyle='-', linewidth=2)
 
-    # # タイトルが重ならないようにする
-    # plt.tight_layout()
+        # 移動した点を表示
+        for pos in pos_history:
+            plt.plot(pos[0], pos[1], 'o')
+        
+        # 点同士を線で結ぶ
+        for i in range(len(pos_history)-1):
+            x1 = pos_history[i][0]
+            y1 = pos_history[i][1]
+            x2 = pos_history[i+1][0]
+            y2 = pos_history[i+1][1]
+            plt.plot([x1, x2], [y1, y2], linestyle='-', linewidth=2)
 
-    # # 画像保存用にfigを取り出す
+        # 等高線を表示
+        n = 64
+        x = np.linspace(-1, 1, n)
+        y = np.linspace(-1, 1, n)
+        X,Y = np.meshgrid(x, y)
+        
+        # plt.axes([0.025, 0.025, 0.95, 0.95])
+        
+        plt.contourf(X, Y, f(X, Y), 8, alpha=.75, cmap=plt.cm.hot)
+        C = plt.contour(X, Y, f(X, Y), 8, colors='black', linewidth=.5)
+        plt.clabel(C, inline=1, fontsize=10)
+
+        plt.xticks(())
+        plt.yticks(())
+        
+        
+    # タイトルが重ならないようにする
+    plt.tight_layout()
+
+    # 画像保存用にfigを取り出す
     # fig = plt.gcf()
     # fig.set_size_inches(50.0, 60.0)
 
-    # # 画像を表示
-    # plt.show()
-
-    # # 画像を保存
+    # 画像を表示
+    fig2.show()
+    
+    # 画像を保存
     # fig.savefig('gradient_descent_method.png')
+
+    # 終了を防ぐ
+    input()
 
 main()
 
