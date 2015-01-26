@@ -54,34 +54,23 @@ def gradient_descent_method(gradient_f, init_pos, learning_rate):
     return (pos, np.array(pos_history))
 
 # 値の高低を色で表現
-def draw_pcolor(fig):
+def draw_color_map(fig):
 
-
-    # X, Yを一定範囲にグリッド状に取り、Z = f(X,Y)を求める
-    X = np.arange(-1.0, 1.0, 0.01)
-    Y = np.arange(-1.0, 1.0, 0.01)
-    X, Y = np.meshgrid(X, Y)
+    ax1 = fig.add_subplot(111)
+    n = 256
+    x = np.linspace(-1.5, 1.5, n)
+    y = np.linspace(-1.5, 1.5, n)
+    X,Y = np.meshgrid(x, y)
     Z = f1(X, Y)
 
-    # 滑らかな3次元プロットを行う
-    # rstride, cstride: X, Yを何個飛ばしに見るか。両方を10にすると99%のデータを捨てることになる(多分)
-    # cmap: カラーマップ。配色方法の指定
-    surf = ax.plot_surface(X, Y, Z, rstride=5, cstride=5, cmap=cm.coolwarm,
-                           linewidth=0, antialiased=False)
+    pc = ax1.pcolor(X, Y, Z, cmap='RdBu')
 
-    # Z軸に数値を表示する範囲を指定
-    #ax.set_zlim(-1.01, 1.01)
-    # Z軸に数値をn個等間隔に表示
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    # Z軸に表示する数値のフォーマット
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.1f'))
-
-    # # グラフ右端に凡例を表示
-    fig.colorbar(surf, shrink=0.5, aspect=5)
-
-    # 表示
-    fig.show()
-    
+    # グラフに凡例を表示
+    # http://stackoverflow.com/questions/18874135/how-to-plot-pcolor-colorbar-in-a-different-subplot-matplotlib
+    # http://stackoverflow.com/questions/13784201/matplotlib-2-subplots-1-colorbar
+    fig.subplots_adjust(right=0.8) # 右端を空ける？
+    cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7]) # カラーバー用のaxesを用意
+    fig.colorbar(pc, cax=cbar_ax) # カラーバーを描画
 
 def draw_contour(fig):
     # 等高線を描く
@@ -101,9 +90,13 @@ def draw_contour(fig):
 
 
 def main():
-    # 等高線を表示
+    # カラーマップを表示
     fig1 = plt.figure(1)
-    draw_contour(fig1)
+    draw_color_map(fig1)
+    
+    # 等高線を表示
+    fig2 = plt.figure(2)
+    draw_contour(fig2)
 
     plt.show()
     
