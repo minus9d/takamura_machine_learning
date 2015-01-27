@@ -72,9 +72,8 @@ def draw_color_map(fig):
     cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7]) # カラーバー用のaxesを用意
     fig.colorbar(pc, cax=cbar_ax) # カラーバーを描画
 
-def draw_contour(fig):
+def draw_contour(ax):
     # 等高線を描く
-    ax1 = fig.add_subplot(111)
     n = 256
     x = np.linspace(-1.5, 1.5, n)
     y = np.linspace(-1.5, 1.5, n)
@@ -82,46 +81,42 @@ def draw_contour(fig):
 
     level_num = 20
     # 等高線で同じ高さとなるエリアを色分け
-    ax1.contourf(X, Y, f1(X, Y), level_num, alpha=.75, cmap=plt.cm.hot)
+    ax.contourf(X, Y, f1(X, Y), level_num, alpha=.75, cmap=plt.cm.hot)
     # 等高線を引く
-    C = ax1.contour(X, Y, f1(X, Y), level_num, colors='black', linewidth=.5)
-    ax1.clabel(C, inline=1, fontsize=10)
-    ax1.set_title('contour')
+    C = ax.contour(X, Y, f1(X, Y), level_num, colors='black', linewidth=.5)
+    ax.clabel(C, inline=1, fontsize=10)
+    ax.set_title('contour')
 
 
+def is_valid(num):
+    return -5 < num < 5;
+    
 def main():
     # カラーマップを表示
     fig1 = plt.figure(1)
     draw_color_map(fig1)
     
-    # 等高線を表示
-    fig2 = plt.figure(2)
-    draw_contour(fig2)
-
-    plt.show()
-    
-    
-def aaa():
-    
-    input()
-
     learning_rates = [ 0.1, 0.2, 0.4, 0.6 ]
 
     # 収束する様子を表示するためのグラフ
-    fig2 = plt.figure(2)
+    fig2 = plt.figure(3)
 
     for i, learning_rate in enumerate(learning_rates):
         ans, pos_history = gradient_descent_method(gradient_f1, (0.1, 0.1), learning_rate)
 
         # subplotの場所を指定
-        plt.subplot(2, 2, (i+1)) # 2行2列の意味
+        ax = plt.subplot(2, 2, (i+1)) # 2行2列の意味
+
+        # 等高線を描画
+        draw_contour(ax)
 
         # グラフのタイトル
-        plt.title("learning rate: " + str(learning_rate) + ", iteration: " + str(len(pos_history)))
+        ax.set_title("learning rate: " + str(learning_rate) + ", iteration: " + str(len(pos_history)))
 
         # 移動した点を表示
         for pos in pos_history:
-            plt.plot(pos[0], pos[1], 'o')
+            if is_valid(pos[0]) and is_valid(pos[1]):
+                ax.plot(pos[0], pos[1], 'o')
         
         # 点同士を線で結ぶ
         for i in range(len(pos_history)-1):
@@ -129,39 +124,18 @@ def aaa():
             y1 = pos_history[i][1]
             x2 = pos_history[i+1][0]
             y2 = pos_history[i+1][1]
-            plt.plot([x1, x2], [y1, y2], linestyle='-', linewidth=2)
-
-        # 等高線を表示
-        n = 64
-        x = np.linspace(-1, 1, n)
-        y = np.linspace(-1, 1, n)
-        X,Y = np.meshgrid(x, y)
-        
-        # plt.axes([0.025, 0.025, 0.95, 0.95])
-        
-        plt.contourf(X, Y, f(X, Y), 8, alpha=.75, cmap=plt.cm.hot)
-        C = plt.contour(X, Y, f(X, Y), 8, colors='black', linewidth=.5)
-        plt.clabel(C, inline=1, fontsize=10)
-
-        plt.xticks(())
-        plt.yticks(())
-        
+            if all([is_valid(v) for v in [x1, y1, x2, y2]]):
+                ax.plot([x1, x2], [y1, y2], linestyle='-', linewidth=2)
         
     # タイトルが重ならないようにする
-    plt.tight_layout()
-
-    # 画像保存用にfigを取り出す
-    # fig = plt.gcf()
-    # fig.set_size_inches(50.0, 60.0)
+    fig2.tight_layout()
 
     # 画像を表示
-    fig2.show()
-    
-    # 画像を保存
-    # fig.savefig('gradient_descent_method.png')
+    plt.show()
 
-    # 終了を防ぐ
-    input()
+    # 画像を保存
+    fig1.savefig('color_map.png')
+    fig2.savefig('2d-result.png')
 
 main()
 
